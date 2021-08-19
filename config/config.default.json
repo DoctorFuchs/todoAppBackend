@@ -1,0 +1,10 @@
+{
+	"saltSize":16,
+	"userIDLength":20,
+	"todoIDLength":20,
+	"dbUri":"mongodb://localhost",
+	"dbName":"todoApp",
+	"userDataCollectionName":"users",
+	"todoCollectionName":"todos",
+	"maxTodoAmt":20
+}

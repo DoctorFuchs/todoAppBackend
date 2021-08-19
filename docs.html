@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<head>
+<meta charset="utf-8">
+</head>
+
+<body style="color:white; background-color:#000011;">
+<h1>API documentation</h1>
+<hr>
+<ol>
+    <li>Creating a user 
+        <p>Make Http/Https(depending on server config) request to [your domain/ip]/createUser<br>Required body data in JSON format:</p>
+        <ol> 
+            <li>username in field "u"</li>
+            <li>email in field "m"</li>
+            <li>HASHED password in field "pwh" (sha512 unsalted)</li> 
+        </ol>
+    </li>
+    <br>
+    <li>Removing a user
+        <p>Make Http/Https(depending on server config) request to [your domain/ip]/removeUser<br>Required body data in JSON format:</p>
+        <ol>
+            <li>email in field "m"</li>
+            <li>Hashed password in field "pwh"(has to be the same used to create user)</li>
+        </ol>
+    </li>
+</ol>
+</body>
