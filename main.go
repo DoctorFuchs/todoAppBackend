@@ -27,7 +27,7 @@ import (
 //  - Passwords hashed server-side before storing                                           |
 //General Security practices                                                                |
 //  - User data stored in aes encryption                                                    |
-//      - Key is derived from DIFFERENT hashing algorythm(sha 256) than auth-hash(sha 512)  |
+//      - Key is derived from DIFFERENT hashing algorithm(sha 256) than auth-hash(sha 512)  |
 //  - NEVER STORE UNSALTED HASHES OR PLAINTEXT CREDENTIALS                                  |
 //-------------------------------------------------------------------------------------------
 
@@ -118,7 +118,7 @@ func createUser(w http.ResponseWriter, req *http.Request) {
 	hexSalt := hex.EncodeToString(salt)
 	hash := hash(usr.PwHash, salt)
 
-	var chosen bool = false
+	var chosen = false
 	var usrID string
 
 	//generate random user id
@@ -320,7 +320,7 @@ func createToDo(w http.ResponseWriter, req *http.Request) {
 	e := userDataCollection.FindOne(ctx, filter).Decode(&taf)
 
 	if taf.Todoamnt >= config.MaxTodoAmt {
-		statusResponse(w, "Maximum Ammount Of Todos Exceeded!", 400)
+		statusResponse(w, "Maximum Amount Of Todos Exceeded!", 400)
 		return
 	}
 
@@ -358,7 +358,7 @@ func createToDo(w http.ResponseWriter, req *http.Request) {
 	creationTime := dt.Format("01-02-2006 15:04:05")
 
 	//generate random user id
-	var chosen bool = false
+	var chosen = false
 	var todoID string
 
 	//Repeat gen process until not duplicate
