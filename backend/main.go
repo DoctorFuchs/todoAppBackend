@@ -2,6 +2,7 @@ package main
 
 import (
 	//"reflect"
+	"bytes"
 	"context"
 	"fmt"
 	"time"
@@ -19,6 +20,7 @@ import (
 	"math/rand"
 	//db
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //____________________________________SECURITY GUIDELINES____________________________________
@@ -367,7 +369,7 @@ func createToDo(w http.ResponseWriter, req *http.Request) {
 		//Check for id in database
 		type idfilter struct{ TodoId string }
 		idFilter := idfilter{todoID}
-		readerr := todoCollection.FindOne(ctx, idFilter) //.Decode(&usrRes)
+		readerr := todoCollection.FindOne(ctx, idFilter)
 		//End loop if userid is not duplicate (if read error occurs)
 		if readerr != nil {
 			chosen = true
@@ -466,11 +468,102 @@ func removeToDo(w http.ResponseWriter, req *http.Request) {
 func getToDos(w http.ResponseWriter, req *http.Request) {
 	//TAKES: Ammount of todos to display, user credentials
 	//RESPONDS: Specified ammount of todos(todo title, body and state(done/not done))
+
+	//TODO VALIDATE USER LOGIN, GET ToDo DATA FROM DB, GENERATE 32-BIT ENCRYPTION KEY USING UNSALTED SHA256, DECRYPT DATA, RESPOND DATA AS JSON
+
 	if !checkForJsonHeader(w, req) {
 		return
 	}
 
-	//TODO VALIDATE USER LOGIN, GET ToDo DATA FROM DB, GENERATE 32-BIT ENCRYPTION KEY USING UNSALTED SHA256, DECRYPT DATA, RESPOND DATA AS JSON
+	type request struct {
+		UsrId  string `json:"usrid"`
+		PwHash string `json:"pwhash"`
+	}
+
+	var rq request
+
+	//decode json from body
+	decoder := json.NewDecoder(req.Body)
+	decoder.DisallowUnknownFields()
+	parseErr := decoder.Decode(&rq)
+
+	if parseErr != nil {
+		fmt.Println(parseErr)
+		statusResponse(w, "Invalid Json", 400)
+		return
+	}
+	if rq.UsrId == "" || rq.PwHash == "" {
+		statusResponse(w, "Invalid Json", 400)
+		return
+	}
+
+	//VALIDATE USER LOGIN
+	if !validatePw(rq.UsrId, rq.PwHash) {
+		statusResponse(w, "Invalid Login!", 400)
+		return
+	}
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	//Read todo data from db
+	filter := bson.D{{"ownerid", rq.UsrId}}
+
+	type dbContent struct {
+		Title        string `json:"title"`
+		Content      string `json:"content"`
+		CreationTime string `json:"creationtime"`
+		TodoID       string `json:"todoid"`
+		Done         bool   `json:"done"`
+	}
+
+	var dbc dbContent
+
+	//search for todo with provided user id and parse content of db to object
+	opts := options.Find()
+	cursor, e := todoCollection.Find(ctx, filter, opts)
+
+	if e != nil {
+		statusResponse(w, "Internal Server Error!", 501)
+		return
+	}
+
+	//GENERATE ENCRYPTION KEY
+	encKey := unsaltedSha256Hash(rq.PwHash)
+
+	type todoStruct struct {
+		Title        string
+		Content      string
+		CreationTime string
+		TodoID       string
+		Done         bool
+	}
+
+	var todos []todoStruct
+
+	for cursor.Next(ctx) {
+		cursor.Decode(&dbc)
+
+		todo := todoStruct{string(decryptAES(dbc.Title, encKey)), string(decryptAES(dbc.Content, encKey)), dbc.CreationTime, dbc.TodoID, dbc.Done}
+		todos = append(todos, todo)
+	}
+
+	fmt.Println(todos)
+
+	type JSON struct {
+		Todos []todoStruct
+	}
+
+	obj := JSON{todos}
+
+	var buf bytes.Buffer
+
+	enc := json.NewEncoder(&buf)
+	enc.SetEscapeHTML(false)
+	enc.Encode(obj)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write([]byte(buf.String()))
 }
 
 func validatePw(usrid string, pwhash string) bool {
