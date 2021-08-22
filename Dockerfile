@@ -9,6 +9,9 @@ RUN apk update
 RUN apk add git
 RUN apk add gcc
 RUN apk add build-base
+RUN apk add curl
+
+RUN IP="$(curl ifconfig.me)"
 
 # build go app
 RUN go build .

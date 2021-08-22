@@ -19,6 +19,7 @@ services:
     container_name: 'todobackend'
     ports:
       - '8091:8090'
+    command:
     restart: on-failure
 networks:
   backend_net:

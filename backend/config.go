@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type cfg struct {
@@ -29,11 +30,15 @@ func readConfig() {
 			os.Exit(1)
 		}
 	}
+	if config.DbUri == "backend_net.database.ip4" {
+		ip := os.Getenv("IP")
+		ips := strings.Split(ip, ".")
+		config.DbUri = strings.Join(ips[0:2], ".")+"2"
+	}
 	fmt.Println("Successfully read config file")
 }
 
 func readConfigFromFile(filename string) bool {
-
 	file, err := os.Open(filename)
 	if err != nil {
 		return false

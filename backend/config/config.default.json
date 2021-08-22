@@ -2,7 +2,7 @@
 	"saltSize":16,
 	"userIDLength":20,
 	"todoIDLength":20,
-	"dbUri":"mongodb://localhost",
+	"dbUri":"backend_net.database.ip4",
 	"dbName":"todoApp",
 	"userDataCollectionName":"users",
 	"todoCollectionName":"todos",
