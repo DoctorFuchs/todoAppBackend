@@ -1,4 +1,4 @@
-module nonamewastaken/ToDo
+module nonamewastaken/ToDo/backend
 
 go 1.16
 
