@@ -1,0 +1,26 @@
+version: '3.9'
+services:
+  database:
+    networks:
+      - backend_net
+    user: '0'
+    image: 'mongo'
+    container_name: 'database'
+    environment:
+      - MONGO_INITDB_DATABASE=TODODATABASE
+    volumes:
+      - ./mongo-volume:/data/db
+    ports:
+      - '27017-27019:27017-27019'
+  todobackend:
+    networks:
+      - backend_net
+    build: .
+    container_name: 'todobackend'
+    ports:
+      - '8091:8090'
+    restart: on-failure
+networks:
+  backend_net:
+    name: 'backend_net'
+    driver: 'bridge'
